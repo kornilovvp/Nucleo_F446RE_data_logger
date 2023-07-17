@@ -71,6 +71,7 @@ static void MX_TIM6_Init(void);
 #define UART_SPEED 921600  // 104 uSEc
 //#define UART_SPEED 1843200 // 52  uSec 
 
+
 #define ROW_LEN  (1536)
 
 uint32_t row_count = 0;
