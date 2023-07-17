@@ -158,11 +158,7 @@ int main(void)
 
     HAL_UART_Transmit(&huart2, msg_bug, msg_len, 1);  // 102 uSec
                          
-    
-    
     HAL_GPIO_WritePin(Debug_GPIO_Port, Debug_Pin, GPIO_PIN_RESET);  
-    //HAL_GPIO_TogglePin(Debug_GPIO_Port, Debug_Pin);
-    
     
     while( __HAL_TIM_GET_COUNTER(&htim6) < 10 )  // 1 msec delay
     {    
