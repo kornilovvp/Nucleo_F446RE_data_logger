@@ -6,7 +6,7 @@
 
 "-p" 
 
-"C:\Program Files\IAR Systems\Embedded Workbench 9.1\arm\CONFIG\debugger\ST\STM32F446RE.ddf" 
+"C:\ProgramFilesIAR9\IAR Systems\Embedded Workbench 9.1\arm\CONFIG\debugger\ST\STM32F446RE.ddf" 
 
 "--drv_verify_download" 
 

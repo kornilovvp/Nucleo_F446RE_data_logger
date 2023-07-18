@@ -23,9 +23,9 @@
 
 if ($debugfile -eq "")
 {
-& "C:\Program Files\IAR Systems\Embedded Workbench 9.1\common\bin\cspybat" -f "C:\STM32_Rep\Nucleo_F446RE_data_logger\Nucleo_F446RE_data_logger\EWARM\settings\Nucleo_F446RE_data_logger.Nucleo_F446RE_data_logger.general.xcl" --backend -f "C:\STM32_Rep\Nucleo_F446RE_data_logger\Nucleo_F446RE_data_logger\EWARM\settings\Nucleo_F446RE_data_logger.Nucleo_F446RE_data_logger.driver.xcl" 
+& "C:\ProgramFilesIAR9\IAR Systems\Embedded Workbench 9.1\common\bin\cspybat" -f "C:\temp\repositories\Nucleo_F446RE_data_logger\Nucleo_F446RE_data_logger\EWARM\settings\Nucleo_F446RE_data_logger.Nucleo_F446RE_data_logger.general.xcl" --backend -f "C:\temp\repositories\Nucleo_F446RE_data_logger\Nucleo_F446RE_data_logger\EWARM\settings\Nucleo_F446RE_data_logger.Nucleo_F446RE_data_logger.driver.xcl" 
 }
 else
 {
-& "C:\Program Files\IAR Systems\Embedded Workbench 9.1\common\bin\cspybat" -f "C:\STM32_Rep\Nucleo_F446RE_data_logger\Nucleo_F446RE_data_logger\EWARM\settings\Nucleo_F446RE_data_logger.Nucleo_F446RE_data_logger.general.xcl" --debug_file=$debugfile --backend -f "C:\STM32_Rep\Nucleo_F446RE_data_logger\Nucleo_F446RE_data_logger\EWARM\settings\Nucleo_F446RE_data_logger.Nucleo_F446RE_data_logger.driver.xcl" 
+& "C:\ProgramFilesIAR9\IAR Systems\Embedded Workbench 9.1\common\bin\cspybat" -f "C:\temp\repositories\Nucleo_F446RE_data_logger\Nucleo_F446RE_data_logger\EWARM\settings\Nucleo_F446RE_data_logger.Nucleo_F446RE_data_logger.general.xcl" --debug_file=$debugfile --backend -f "C:\temp\repositories\Nucleo_F446RE_data_logger\Nucleo_F446RE_data_logger\EWARM\settings\Nucleo_F446RE_data_logger.Nucleo_F446RE_data_logger.driver.xcl" 
 }
