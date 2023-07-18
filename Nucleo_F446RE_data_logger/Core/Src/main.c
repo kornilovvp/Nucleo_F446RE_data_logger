@@ -81,8 +81,6 @@ static void MX_TIM2_Init(void);
 uint32_t row_count = 0;
 
 uint32_t raw_adc1_ch1_val = 0;
-uint32_t raw_adc1_ch2_val = 0;
-uint32_t raw_adc1_ch3_val = 0;
 
 
 uint8_t msg_bug[32];
@@ -92,19 +90,24 @@ int msg_len = 0;
 
 
 
-
-
-uint32_t adc_ivents = 0;
-uint32_t adc_inj_ivents = 0;
-uint32_t tim5_ivents = 0;
-
-
-
-
-
+//------------------------------------------------------------------------------
 #define ADC_BUFFER_SEIZE (25000)
 uint16_t raw_adc_buffer[ADC_BUFFER_SEIZE];
 uint32_t raw_adc_buffer_index = 0;
+
+// Sampling time 25000 Hz
+
+#define CT_1000_MSEC (25000)
+#define CT_500_MSEC  (12500)
+#define CT_400_MSEC  (10000)
+#define CT_200_MSEC  (5000)
+#define CT_100_MSEC  (2500)
+
+#define CAPTURING_TIME  CT_100_MSEC
+
+
+
+
 
 uint8_t fl_button_press_detected = 0;
 
@@ -115,14 +118,11 @@ uint8_t fl_button_press_detected = 0;
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
-    adc_ivents ++;
 }
 
 
 void HAL_ADCEx_InjectedConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
-    adc_inj_ivents ++;
-    //HAL_GPIO_TogglePin(Debug_GPIO_Port, Debug_Pin);
 }
 
 
@@ -132,27 +132,9 @@ void HAL_ADCEx_InjectedConvCpltCallback(ADC_HandleTypeDef* hadc)
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-    /* 
-    tim5_ivents ++;
-    
-    HAL_GPIO_WritePin(Debug_GPIO_Port, Debug_Pin, GPIO_PIN_SET); 
-    
-    HAL_ADCEx_InjectedStart(&hadc1);
-    
-    HAL_ADCEx_InjectedPollForConversion(&hadc1, 1);
-    
-    raw_adc1_ch1_val = HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_1);
-    
-    HAL_GPIO_WritePin(Debug_GPIO_Port, Debug_Pin, GPIO_PIN_RESET);  
-     */
-
-    //HAL_GPIO_TogglePin(Debug_GPIO_Port, Debug_Pin);
-    
     
     if (fl_button_press_detected == 1)
     {
-        tim5_ivents ++;
-        
         HAL_GPIO_WritePin(Debug_GPIO_Port, Debug_Pin, GPIO_PIN_SET);
         
         HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
@@ -167,7 +149,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         
         raw_adc_buffer_index++;
         
-        if (raw_adc_buffer_index >= ADC_BUFFER_SEIZE)
+        if (raw_adc_buffer_index >= CAPTURING_TIME)
         {
             fl_button_press_detected = 2;
             
@@ -274,6 +256,39 @@ int main(void)
             
             fl_button_press_detected = 1;
         }
+    }
+    
+    
+    // send data to UART
+    if (fl_button_press_detected == 2)
+    {
+        double data1 = 0.0;
+        
+        HAL_GPIO_WritePin(Debug_GPIO_Port, Debug_Pin, GPIO_PIN_SET);
+        
+        for (int i=0; i<CAPTURING_TIME; i++)
+        {
+            data1 = raw_adc_buffer[i];
+            
+            if (i < (CAPTURING_TIME - 1) )
+            {
+                msg_len = sprintf((char*)msg_bug, "%.4f ", data1);
+            }
+            else
+            {
+                msg_len = sprintf((char*)msg_bug, "%.4f\n", data1);
+            }
+            
+            HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
+            
+            HAL_UART_Transmit(&huart2, msg_bug, msg_len, 1);  // 102 uSec
+            
+            HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
+        }
+        
+        HAL_GPIO_WritePin(Debug_GPIO_Port, Debug_Pin, GPIO_PIN_RESET);
+        
+        fl_button_press_detected = 0;
     }
     
         
@@ -551,7 +566,7 @@ static void MX_USART2_UART_Init(void)
   
   /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
-  huart2.Init.BaudRate = 115200;
+  huart2.Init.BaudRate = UART_SPEED; //115200;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;
