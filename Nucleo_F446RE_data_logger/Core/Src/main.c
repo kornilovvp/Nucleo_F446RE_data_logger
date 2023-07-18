@@ -92,48 +92,102 @@ int msg_len = 0;
 
 
 
+
+
 uint32_t adc_ivents = 0;
 uint32_t adc_inj_ivents = 0;
 uint32_t tim5_ivents = 0;
 
 
+
+
+
+#define ADC_BUFFER_SEIZE (25000)
+uint16_t raw_adc_buffer[ADC_BUFFER_SEIZE];
+uint32_t raw_adc_buffer_index = 0;
+
+uint8_t fl_button_press_detected = 0;
+
+
+
+
+
+
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
     adc_ivents ++;
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
 }
 
 
 void HAL_ADCEx_InjectedConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
     adc_inj_ivents ++;
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    
-    HAL_GPIO_TogglePin(Debug_GPIO_Port, Debug_Pin);
-}
-
-
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-    tim5_ivents ++;
-    __NOP();
-    __NOP();
-    __NOP();
-    __NOP();
-    
-    
     //HAL_GPIO_TogglePin(Debug_GPIO_Port, Debug_Pin);
 }
 
 
 
 
+
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+    /* 
+    tim5_ivents ++;
+    
+    HAL_GPIO_WritePin(Debug_GPIO_Port, Debug_Pin, GPIO_PIN_SET); 
+    
+    HAL_ADCEx_InjectedStart(&hadc1);
+    
+    HAL_ADCEx_InjectedPollForConversion(&hadc1, 1);
+    
+    raw_adc1_ch1_val = HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_1);
+    
+    HAL_GPIO_WritePin(Debug_GPIO_Port, Debug_Pin, GPIO_PIN_RESET);  
+     */
+
+    //HAL_GPIO_TogglePin(Debug_GPIO_Port, Debug_Pin);
+    
+    
+    if (fl_button_press_detected == 1)
+    {
+        tim5_ivents ++;
+        
+        HAL_GPIO_WritePin(Debug_GPIO_Port, Debug_Pin, GPIO_PIN_SET);
+        
+        HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
+        
+        HAL_ADCEx_InjectedStart(&hadc1);
+        
+        HAL_ADCEx_InjectedPollForConversion(&hadc1, 1);
+        
+        raw_adc1_ch1_val = HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_1);
+        
+        raw_adc_buffer[raw_adc_buffer_index] = raw_adc1_ch1_val;
+        
+        raw_adc_buffer_index++;
+        
+        if (raw_adc_buffer_index >= ADC_BUFFER_SEIZE)
+        {
+            fl_button_press_detected = 2;
+            
+            HAL_GPIO_WritePin(Debug_GPIO_Port, Debug_Pin, GPIO_PIN_RESET);
+            
+            HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
+        }
+    }
+}
+
+
+
+
+
+void clear_buffer(void)
+{
+    memset(raw_adc_buffer, 0, sizeof(raw_adc_buffer));
+    
+    raw_adc_buffer_index = 0;
+}
 
 
 
@@ -189,7 +243,7 @@ int main(void)
   //HAL_ADC_Start(&hadc1);
   //HAL_ADC_Start_IT(&hadc1);
   //HAL_ADCEx_InjectedStart(&hadc1);
-  HAL_ADCEx_InjectedStart_IT(&hadc1);
+  //HAL_ADCEx_InjectedStart_IT(&hadc1);
 
   
   //HAL_TIM_Base_Start(&htim2);
@@ -199,10 +253,10 @@ int main(void)
   
   
   
-  while(1)
-  {
+  //while(1)
+  //{
   
-  }
+  //}
       
   
   /* USER CODE END 2 */
@@ -212,42 +266,56 @@ int main(void)
   while (1)
   {
     
-//    HAL_GPIO_WritePin(Debug_GPIO_Port, Debug_Pin, GPIO_PIN_SET);  
-//      
-//    HAL_ADCEx_InjectedStart(&hadc1);
-//    
-//    __HAL_TIM_SET_COUNTER(&htim6, 0);
-//    
-//    HAL_ADCEx_InjectedPollForConversion(&hadc1, 1);    
-//    
-//    raw_adc1_ch1_val = HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_1);
-//    raw_adc1_ch2_val = HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_2);
-//    raw_adc1_ch3_val = HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_3);
-//    
-//    double data1 = raw_adc1_ch1_val;
-//    
-//    if(row_count < (ROW_LEN - 1) )
-//    {
-//        row_count += 1;
-//        
-//        msg_len = sprintf((char*)msg_bug, "%.4f ", data1);  // 28 uSec
-//    }
-//    else
-//    {
-//        row_count = 0;
-//        
-//        msg_len = sprintf((char*)msg_bug, "%.4f\n", data1);  // 28 uSec
-//    }
-//     
-//
-//    HAL_UART_Transmit(&huart2, msg_bug, msg_len, 1);  // 102 uSec
-//                         
-//    HAL_GPIO_WritePin(Debug_GPIO_Port, Debug_Pin, GPIO_PIN_RESET);  
-//    
-//    while( __HAL_TIM_GET_COUNTER(&htim6) < 10 )  // 1 msec delay
-//    {    
-//    }
-//    
+    if (fl_button_press_detected == 0)
+    {
+        if( HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) ==  GPIO_PIN_RESET)
+        {
+            clear_buffer();
+            
+            fl_button_press_detected = 1;
+        }
+    }
+    
+        
+        
+    //HAL_GPIO_WritePin(Debug_GPIO_Port, Debug_Pin, GPIO_PIN_SET);  
+      
+    //HAL_ADCEx_InjectedStart(&hadc1);
+    
+    //__HAL_TIM_SET_COUNTER(&htim6, 0);
+    
+    //HAL_ADCEx_InjectedPollForConversion(&hadc1, 1);    
+    
+    //raw_adc1_ch1_val = HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_1);
+    //raw_adc1_ch2_val = HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_2);
+    //raw_adc1_ch3_val = HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_3);
+    
+    /*
+    double data1 = raw_adc1_ch1_val;
+    
+    if(row_count < (ROW_LEN - 1) )
+    {
+        row_count += 1;
+        
+        msg_len = sprintf((char*)msg_bug, "%.4f ", data1);  // 28 uSec
+    }
+    else
+    {
+        row_count = 0;
+        
+        msg_len = sprintf((char*)msg_bug, "%.4f\n", data1);  // 28 uSec
+    }
+     
+
+    HAL_UART_Transmit(&huart2, msg_bug, msg_len, 1);  // 102 uSec
+      */
+    
+    //HAL_GPIO_WritePin(Debug_GPIO_Port, Debug_Pin, GPIO_PIN_RESET);  
+    
+   
+    //while( __HAL_TIM_GET_COUNTER(&htim6) < 10 ){}  // 1 msec delay
+
+    
     
     
     /* USER CODE END WHILE */
@@ -269,7 +337,7 @@ void SystemClock_Config(void)
   /** Configure the main internal regulator output voltage
   */
   __HAL_RCC_PWR_CLK_ENABLE();
-  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE3);
 
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
@@ -279,18 +347,11 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 4;
-  RCC_OscInitStruct.PLL.PLLN = 180;
+  RCC_OscInitStruct.PLL.PLLN = 120;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 2;
   RCC_OscInitStruct.PLL.PLLR = 2;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Activate the Over-Drive mode
-  */
-  if (HAL_PWREx_EnableOverDrive() != HAL_OK)
   {
     Error_Handler();
   }
@@ -304,7 +365,7 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK)
   {
     Error_Handler();
   }
@@ -332,9 +393,9 @@ static void MX_ADC1_Init(void)
   /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
   */
   hadc1.Instance = ADC1;
-  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
+  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
-  hadc1.Init.ScanConvMode = ENABLE;
+  hadc1.Init.ScanConvMode = DISABLE;
   hadc1.Init.ContinuousConvMode = DISABLE;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
@@ -362,22 +423,13 @@ static void MX_ADC1_Init(void)
   */
   sConfigInjected.InjectedChannel = ADC_CHANNEL_0;
   sConfigInjected.InjectedRank = 1;
-  sConfigInjected.InjectedNbrOfConversion = 2;
+  sConfigInjected.InjectedNbrOfConversion = 1;
   sConfigInjected.InjectedSamplingTime = ADC_SAMPLETIME_3CYCLES;
-  sConfigInjected.ExternalTrigInjecConvEdge = ADC_EXTERNALTRIGINJECCONVEDGE_RISING;
-  sConfigInjected.ExternalTrigInjecConv = ADC_EXTERNALTRIGINJECCONV_T2_TRGO;
+  sConfigInjected.ExternalTrigInjecConvEdge = ADC_EXTERNALTRIGINJECCONVEDGE_NONE;
+  sConfigInjected.ExternalTrigInjecConv = ADC_INJECTED_SOFTWARE_START;
   sConfigInjected.AutoInjectedConv = DISABLE;
   sConfigInjected.InjectedDiscontinuousConvMode = ENABLE;
   sConfigInjected.InjectedOffset = 0;
-  if (HAL_ADCEx_InjectedConfigChannel(&hadc1, &sConfigInjected) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** Configures for the selected ADC injected channel its corresponding rank in the sequencer and its sample time
-  */
-  sConfigInjected.InjectedChannel = ADC_CHANNEL_VREFINT;
-  sConfigInjected.InjectedRank = 2;
   if (HAL_ADCEx_InjectedConfigChannel(&hadc1, &sConfigInjected) != HAL_OK)
   {
     Error_Handler();
@@ -407,7 +459,7 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 89;
+  htim2.Init.Prescaler = 59;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim2.Init.Period = 39;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -495,7 +547,7 @@ static void MX_USART2_UART_Init(void)
 
   /* USER CODE BEGIN USART2_Init 1 */
 
-#warning please sen instade 115200 the defs UART_SPEED
+  #warning please sen instade 115200 the defs UART_SPEED
   
   /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
