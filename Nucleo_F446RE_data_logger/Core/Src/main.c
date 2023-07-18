@@ -92,6 +92,7 @@ int msg_len = 0;
 
 //------------------------------------------------------------------------------
 #define ADC_BUFFER_SEIZE (25000)
+
 uint16_t raw_adc_buffer[ADC_BUFFER_SEIZE];
 uint32_t raw_adc_buffer_index = 0;
 
@@ -212,33 +213,8 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   
-//  HAL_TIM_Base_Start(&htim6); 
-  
-  
-  // Statrt ADC 
-  //HAL_ADC_Start_IT(&hadc1);
-  // HAL_TIM_Base_Start(&htim5);
-  //
-  
-  
-  
-  //HAL_ADC_Start(&hadc1);
-  //HAL_ADC_Start_IT(&hadc1);
-  //HAL_ADCEx_InjectedStart(&hadc1);
-  //HAL_ADCEx_InjectedStart_IT(&hadc1);
 
-  
-  //HAL_TIM_Base_Start(&htim2);
   HAL_TIM_Base_Start_IT(&htim2);   
-  // HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_4);
-  
-  
-  
-  
-  //while(1)
-  //{
-  
-  //}
       
   
   /* USER CODE END 2 */
@@ -290,48 +266,7 @@ int main(void)
         
         fl_button_press_detected = 0;
     }
-    
-        
-        
-    //HAL_GPIO_WritePin(Debug_GPIO_Port, Debug_Pin, GPIO_PIN_SET);  
-      
-    //HAL_ADCEx_InjectedStart(&hadc1);
-    
-    //__HAL_TIM_SET_COUNTER(&htim6, 0);
-    
-    //HAL_ADCEx_InjectedPollForConversion(&hadc1, 1);    
-    
-    //raw_adc1_ch1_val = HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_1);
-    //raw_adc1_ch2_val = HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_2);
-    //raw_adc1_ch3_val = HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_3);
-    
-    /*
-    double data1 = raw_adc1_ch1_val;
-    
-    if(row_count < (ROW_LEN - 1) )
-    {
-        row_count += 1;
-        
-        msg_len = sprintf((char*)msg_bug, "%.4f ", data1);  // 28 uSec
-    }
-    else
-    {
-        row_count = 0;
-        
-        msg_len = sprintf((char*)msg_bug, "%.4f\n", data1);  // 28 uSec
-    }
-     
-
-    HAL_UART_Transmit(&huart2, msg_bug, msg_len, 1);  // 102 uSec
-      */
-    
-    //HAL_GPIO_WritePin(Debug_GPIO_Port, Debug_Pin, GPIO_PIN_RESET);  
-    
-   
-    //while( __HAL_TIM_GET_COUNTER(&htim6) < 10 ){}  // 1 msec delay
-
-    
-    
+ 
     
     /* USER CODE END WHILE */
 
