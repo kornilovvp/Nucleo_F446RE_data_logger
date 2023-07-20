@@ -69,6 +69,11 @@ static void MX_TIM2_Init(void);
 /* USER CODE BEGIN 0 */
 
 
+#define NORMALIZE_ADC_SIGNAL  (1)
+
+
+
+
 //#define UART_SPEED 115200
 #define UART_SPEED 921600  // 104 uSEc
 //#define UART_SPEED 1843200 // 52  uSec 
@@ -174,7 +179,24 @@ void clear_buffer(void)
 
 
 
+//------------------------------------------------------------------------------------
+//X-cur X1-min X2-max Y1-min Y2-max
+double GetLiner(double X, double X1, double X2, double Y1, double Y2 )
+{
+	double result;
+	result = ( (X*(Y2-Y1)) / (X2-X1) ) + ( ( (Y1*X2) - (X1*Y2) ) / (X2-X1) );
+        
+	//TEST RESULT ON DIV ON ZERO
+	//if(!(result==result))
+	//{
+	//	return 0.0f;
+	//}
+	return result;
+}
 
+
+
+//
 
 /* USER CODE END 0 */
 
@@ -239,6 +261,7 @@ int main(void)
     if (fl_button_press_detected == 2)
     {
         double data1 = 0.0;
+        double data2 = 0.0;
         
         HAL_GPIO_WritePin(Debug_GPIO_Port, Debug_Pin, GPIO_PIN_SET);
         
@@ -246,13 +269,19 @@ int main(void)
         {
             data1 = raw_adc_buffer[i];
             
+            #ifdef NORMALIZE_ADC_SIGNAL
+                        
+            data2 = GetLiner(data1, 0.0f, 4095.0f, 0.0f, 1.0f);
+            
+            #endif            
+            
             if (i < (CAPTURING_TIME - 1) )
             {
-                msg_len = sprintf((char*)msg_bug, "%.4f ", data1);
+                msg_len = sprintf((char*)msg_bug, "%0.4f ", data2);
             }
             else
             {
-                msg_len = sprintf((char*)msg_bug, "%.4f\n", data1);
+                msg_len = sprintf((char*)msg_bug, "%0.4f\n", data2);
             }
             
             HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
